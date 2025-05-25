@@ -1,0 +1,63 @@
+services:
+  hasher:
+    build:
+      context: .
+    container_name: hasher
+    restart: unless-stopped
+    ports:
+      - "6969:6969"
+    environment:
+      - HASHER_MODE=development
+      - HASHER_REDIS_HOST=redis
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/bin/hasher", "--health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+  redis:
+    image: redis:8.0.1-alpine3.21
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PASSWORD=1234qwerASDF
+      - REDIS_USER=user
+      - REDIS_USER_PASSWORD=1234qwerASDF
+    volumes:
+      - redis_data:/data
+      - /tmp/redis_data:/usr/local/etc/redis/redis.conf:ro
+    command: >
+      sh -c '
+        echo "bind 0.0.0.0" > /tmp/redis.conf &&
+        echo "requirepass 1234qwerASDF" >> /tmp/redis.conf &&
+        echo "appendonly yes" >> /tmp/redis.conf &&
+        echo "appendfsync everysec" >> /tmp/redis.conf &&
+        echo "save 900 1" >> /tmp/redis.conf &&
+        echo "save 300 10" >> /tmp/redis.conf &&
+        echo "save 60 10000" >> /tmp/redis.conf &&
+        echo "maxmemory 512mb" >> /tmp/redis.conf &&
+        echo "maxmemory-policy allkeys-lru" >> /tmp/redis.conf &&
+        redis-server /tmp/redis.conf
+      '
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1G
+        reservations:
+          cpus: "0.5"
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "1234qwerASDF", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+volumes:
+  redis_data:
+    driver: local

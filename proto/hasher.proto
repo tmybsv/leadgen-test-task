@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package leadgen.hasher.v1;
+
+option go_package = "github.com/tmybsv/leadgen-test-task/pkg/pb/hasher/v1";
+
+service HasherService {
+  rpc Hash(HashRequest) returns (HashResponse);
+}
+
+message HashRequest {
+  string input = 1;
+  HashAlgorithm algorithm = 2;
+}
+
+message HashResponse {
+  string hash = 1;
+}
+
+enum HashAlgorithm {
+  HASH_ALGORITHM_UNSPECIFIED = 0;
+  HASH_ALGORITHM_MD5 = 1;
+  HASH_ALGORITHM_SHA256 = 2;
+}

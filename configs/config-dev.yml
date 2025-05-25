@@ -1,0 +1,8 @@
+grpc:
+  port: 6969
+redis:
+  host: "127.0.0.1"
+  port: 6379
+  username: "default"
+  password: "1234qwerASDF"
+  ttl: "5m"
